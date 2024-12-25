@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include <deque>
 #include <raymath.h>
+#include <fstream> // For file operations
 
 using namespace std;
 
@@ -59,7 +60,7 @@ public:
     void Update()
     {
         body.push_front(Vector2Add(body[0], direction));
-        if (addSegment == true)
+        if (addSegment)
         {
             addSegment = false;
         }
@@ -78,7 +79,6 @@ public:
 
 class Food
 {
-
 public:
     Vector2 position;
     Texture2D texture;
@@ -122,24 +122,21 @@ public:
 class Game
 {
 public:
-    Snake snake = Snake();
-    Food food = Food(snake.body);
-    bool running = true;
-    int score = 0;
-    Sound eatSound;
-    Sound wallSound;
+    Snake snake;
+    Food food;
+    bool running;
+    int score;
+    int highScore; // Variable to store the high score
 
-    Game()
+    Game() : snake(), food(snake.body), running(true), score(0), highScore(0)
     {
         InitAudioDevice();
-        eatSound = LoadSound("Sounds/eat.mp3");
-        wallSound = LoadSound("Sounds/wall.mp3");
+        LoadHighScore(); // Load high score from file
     }
 
     ~Game()
     {
-        UnloadSound(eatSound);
-        UnloadSound(wallSound);
+        SaveHighScore(); // Save high score to file
         CloseAudioDevice();
     }
 
@@ -147,6 +144,7 @@ public:
     {
         food.Draw();
         snake.Draw();
+        if (!running) DrawGameOver();
     }
 
     void Update()
@@ -154,10 +152,23 @@ public:
         if (running)
         {
             snake.Update();
-            CheckCollisionWithFood();
-            CheckCollisionWithEdges();
-            CheckCollisionWithTail();
+            CheckCollisions();
         }
+    }
+
+    void DrawGameOver()
+    {
+        DrawText("Game Over!", offset + cellSize * cellCount / 2 - 100, offset + cellSize * cellCount / 2 - 40, 40, darkGreen);
+        DrawText(TextFormat("Final Score: %i", score), offset + cellSize * cellCount / 2 - 100, offset + cellSize * cellCount / 2 + 10, 40, darkGreen);
+        DrawText(TextFormat("High Score: %i", highScore), offset + cellSize * cellCount / 2 - 100, offset + cellSize * cellCount / 2 + 60, 20, darkGreen);
+        DrawText("Press SPACE to Restart", offset + cellSize * cellCount / 2 - 150, offset + cellSize * cellCount / 2 + 100, 20, darkGreen);
+    }
+
+    void CheckCollisions()
+    {
+        CheckCollisionWithFood();
+        CheckCollisionWithEdges();
+        CheckCollisionWithTail();
     }
 
     void CheckCollisionWithFood()
@@ -167,17 +178,19 @@ public:
             food.position = food.GenerateRandomPos(snake.body);
             snake.addSegment = true;
             score++;
-            PlaySound(eatSound);
+            // Update high score if current score exceeds it
+            if (score > highScore)
+            {
+                highScore = score;
+            }
+            // Play sound for eating food if needed
         }
     }
 
     void CheckCollisionWithEdges()
     {
-        if (snake.body[0].x == cellCount || snake.body[0].x == -1)
-        {
-            GameOver();
-        }
-        if (snake.body[0].y == cellCount || snake.body[0].y == -1)
+        if (snake.body[0].x >= cellCount || snake.body[0].x < 0 || 
+            snake.body[0].y >= cellCount || snake.body[0].y < 0)
         {
             GameOver();
         }
@@ -185,11 +198,8 @@ public:
 
     void GameOver()
     {
-        snake.Reset();
-        food.position = food.GenerateRandomPos(snake.body);
         running = false;
-        score = 0;
-        PlaySound(wallSound);
+        // Play sound for game over if needed
     }
 
     void CheckCollisionWithTail()
@@ -201,6 +211,34 @@ public:
             GameOver();
         }
     }
+
+    void Restart()
+    {
+        snake.Reset();
+        food.position = food.GenerateRandomPos(snake.body);
+        running = true;
+        score = 0;
+    }
+
+    void LoadHighScore()
+    {
+        ifstream file("highscore.txt");
+        if (file.is_open())
+        {
+            file >> highScore;
+            file.close();
+        }
+    }
+
+    void SaveHighScore()
+    {
+        ofstream file("highscore.txt");
+        if (file.is_open())
+        {
+            file << highScore;
+            file.close();
+        }
+    }
 };
 
 int main()
@@ -209,9 +247,9 @@ int main()
     InitWindow(2 * offset + cellSize * cellCount, 2 * offset + cellSize * cellCount, "Retro Snake");
     SetTargetFPS(60);
 
-    Game game = Game();
+    Game game;
 
-    while (WindowShouldClose() == false)
+    while (!WindowShouldClose())
     {
         BeginDrawing();
 
@@ -221,29 +259,35 @@ int main()
             game.Update();
         }
 
-        if (IsKeyPressed(KEY_UP) && game.snake.direction.y != 1 && allowMove)
+        if (game.running)
         {
-            game.snake.direction = {0, -1};
-            game.running = true;
-            allowMove = false;
+            if (IsKeyPressed(KEY_UP) && game.snake.direction.y != 1 && allowMove)
+            {
+                game.snake.direction = {0, -1};
+                allowMove = false;
+            }
+            if (IsKeyPressed(KEY_DOWN) && game.snake.direction.y != -1 && allowMove)
+            {
+                game.snake.direction = {0, 1};
+                allowMove = false;
+            }
+            if (IsKeyPressed(KEY_LEFT) && game.snake.direction.x != 1 && allowMove)
+            {
+                game.snake.direction = {-1, 0};
+                allowMove = false;
+            }
+            if (IsKeyPressed(KEY_RIGHT) && game.snake.direction.x != -1 && allowMove)
+            {
+                game.snake.direction = {1, 0};
+                allowMove = false;
+            }
         }
-        if (IsKeyPressed(KEY_DOWN) && game.snake.direction.y != -1 && allowMove)
+        else
         {
-            game.snake.direction = {0, 1};
-            game.running = true;
-            allowMove = false;
-        }
-        if (IsKeyPressed(KEY_LEFT) && game.snake.direction.x != 1 && allowMove)
-        {
-            game.snake.direction = {-1, 0};
-            game.running = true;
-            allowMove = false;
-        }
-        if (IsKeyPressed(KEY_RIGHT) && game.snake.direction.x != -1 && allowMove)
-        {
-            game.snake.direction = {1, 0};
-            game.running = true;
-            allowMove = false;
+            if (IsKeyPressed(KEY_SPACE)) // Restart the game
+            {
+                game.Restart();
+            }
         }
 
         // Drawing
@@ -251,7 +295,7 @@ int main()
         DrawRectangleLinesEx(Rectangle{(float)offset - 5, (float)offset - 5, (float)cellSize * cellCount + 10, (float)cellSize * cellCount + 10}, 5, darkGreen);
         DrawText("Retro Snake", offset - 5, 20, 40, darkGreen);
         DrawText(TextFormat("Score: %i", game.score), offset + cellSize * cellCount - 150, 20, 40, darkGreen);
-        game.Draw();        
+        game.Draw();
 
         EndDrawing();
     }
