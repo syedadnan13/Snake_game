@@ -1,25 +1,28 @@
 # C++ Snake game using raylib
-
-This GitHub repository contains the full source code for a Snake game created using the raylib game development library. The game is programmed in the C++ programming language and uses various raylib functions for graphics, input handling, and audio. The game is designed to be played on desktop computers running Windows, macOS, or Linux operating systems. The code is well-structured, easy to read, and heavily commented, making it an excellent resource for aspiring game developers who want to learn more about game programming using raylib
-
-If you're interested in learning how to create your own snake game with raylib, then you'll want to check out the <a href="https://youtu.be/LGqsnM_WEK4">Video Tutorial on YouTube</a> that accompanies this Github repository. The tutorial takes you through each line of code, explaining the logic behind it and demonstrating how it affects the game. You'll learn how to set up the game window, create the snake and food classes, add collision detection, and implement sound effects. By the end of the tutorial, you'll have a fully functional snake game that you can play and modify to your heart's content. So, grab a cup of coffee and get ready to dive into the world of game development with raylib!
-
-# Video Tutorial
-
-<p align="center">
-  <img src="preview.jpg" alt="" width="960">
-</p>
-
-<p align="center">
-🎥 <a href="https://youtu.be/LGqsnM_WEK4">Video Tutorial on YouTube</a>
-</p>
-
-<br>
-<br>
-<p align="center">
-| 📺 <a href="https://www.youtube.com/channel/UC3ivOTE5EgpmF2DHLBmWIWg">My YouTube Channel</a>
-| 🌍 <a href="http://www.educ8s.tv">My Website</a> | <br>
-</p>
+This GitHub repository contains the full source code for a Snake game created using the raylib game development library. The game is programmed in the C++ programming language and uses various raylib functions for graphics, input handling, and audio.
+# Overview
+The Retro Snake Game is a simple implementation of the classic Snake game using the raylib library. The player controls a snake that moves around the screen, eating food to grow longer while avoiding collisions with the walls and its own tail. The game features a score display and a game over screen that allows the player to restart the game.
+# Features
+1. Snake Movement: Control the snake using the arrow keys.  
+2. Food Collection: Eat food to grow the snake and increase the score.  
+3. Game Over Screen: Displays the final score and allows the player to restart the game.  
+4. Dynamic Gameplay: The snake grows longer with each piece of food collected.
+# Requirements
+1. raylib: Make sure to have the raylib library installed. You can find installation instructions on the raylib GitHub page. 
+2. C++ Compiler: A C++ compiler such as GCC or Clang.
+# Installation
+1. Clone the repository or download the source code files.  
+2. Ensure that raylib is installed and properly linked in your development environment.  
+3. Place the food image (food.png) in a folder named Graphics and the sound files (eat.mp3 and wall.mp3) in a folder named Sounds.
+# Controls
+1. Arrow Keys: Control the direction of the snake.  
+2. Spacebar: Restart the game after a game over.
+# Game Logic
+1. The snake starts with a length of three segments and moves in a specified direction.  
+2. When the snake eats food, it grows longer, and the score increases.  
+3. The game ends if the snake collides with the walls or itself, displaying the final score and a prompt to restart.
+# Contributing
+Feel free to fork the repository and submit pull requests for improvements or additional features!
 
 
 
